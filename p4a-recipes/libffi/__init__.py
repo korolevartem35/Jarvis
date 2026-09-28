@@ -1,3 +1,4 @@
+from os.path import join
 from pythonforandroid.recipe import Recipe
 from pythonforandroid.toolchain import current_directory, shprint
 import sh
@@ -11,6 +12,10 @@ class LibffiRecipe(Recipe):
 
     def should_build(self, arch):
         return True
+
+    def get_include_dirs(self, arch):
+        # возвращаем путь, куда libffi кладёт заголовки
+        return [join(self.get_build_dir(arch.arch), 'install', 'include')]
 
     def build_arch(self, arch):
         env = self.get_recipe_env(arch)
