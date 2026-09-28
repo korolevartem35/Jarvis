@@ -7,7 +7,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,txt,json
 
 version = 1.0
-requirements = python3,kivy==2.3.0,speechrecognition,plyer,requests,pyjnius,android,pillow,libffi
+requirements = python3,kivy==2.2.1,speechrecognition,plyer,requests,pyjnius,android,pillow,libffi
 
 orientation = portrait
 fullscreen = 0
