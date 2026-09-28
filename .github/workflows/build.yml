@@ -23,7 +23,20 @@ jobs:
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool \
             pkg-config zlib1g-dev libncurses-dev libtinfo6 cmake \
-            libffi-dev libssl-dev automake build-essential
+            libffi-dev libssl-dev automake build-essential libtool-bin
+
+      - name: Downgrade libtool to 2.4.6
+        run: |
+          # libtool 2.4.7 сломал совместимость с libffi 3.4.2
+          cd /tmp
+          wget -q http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+          tar xzf libtool-2.4.6.tar.gz
+          cd libtool-2.4.6
+          ./configure --prefix=/usr/local
+          make -j4
+          sudo make install
+          sudo ldconfig
+          /usr/local/bin/libtool --version
 
       - name: Install buildozer
         run: |
@@ -37,18 +50,11 @@ jobs:
           set -o pipefail
           yes | buildozer android debug 2>&1 | tee build.log
 
-      - name: Patch libffi in buildozer cache
-        if: failure()
-        run: |
-          echo "===== Ищем libffi в кэше buildozer ====="
-          find ~/.buildozer -type d -name "libffi*" 2>/dev/null || true
-          find .buildozer -type d -name "libffi*" 2>/dev/null || true
-
       - name: Show tail of log if failed
         if: failure()
         run: |
-          echo "===== Последние 80 строк лога ====="
-          tail -n 80 build.log
+          echo "===== Последние 120 строк лога ====="
+          tail -n 120 build.log
 
       - name: Upload APK
         if: success()
