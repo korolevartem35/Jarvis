@@ -18,13 +18,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache buildozer
+      - name: Cache buildozer (v2 — свежий)
         uses: actions/cache@v4
         with:
           path: |
             ~/.buildozer
             .buildozer
-          key: buildozer-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-v2-${{ hashFiles('buildozer.spec') }}
 
       - name: Install system deps
         run: |
@@ -38,23 +38,18 @@ jobs:
           pip install --upgrade pip
           pip install "cython<3.0" buildozer
 
-      - name: Patch libffi configure.ac
-        run: |
-          # фикс известного бага libffi: LT_SYS_SYMBOL_USCORE
-          # делаем символическую ссылку на ltmain.sh в p4a
-          echo "Настраиваем окружение для сборки..."
-
       - name: Build APK
         env:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
+          set -o pipefail
           yes | buildozer android debug 2>&1 | tee build.log
 
       - name: Show tail of log if failed
         if: failure()
         run: |
-          echo "===== Последние 60 строк лога ====="
-          tail -n 60 build.log
+          echo "===== Последние 80 строк лога ====="
+          tail -n 80 build.log
 
       - name: Upload APK
         if: success()
