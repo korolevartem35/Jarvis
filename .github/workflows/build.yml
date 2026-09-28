@@ -18,20 +18,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache buildozer (v2 — свежий)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.buildozer
-            .buildozer
-          key: buildozer-v2-${{ hashFiles('buildozer.spec') }}
-
       - name: Install system deps
         run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool \
             pkg-config zlib1g-dev libncurses-dev libtinfo6 cmake \
-            libffi-dev libssl-dev automake
+            libffi-dev libssl-dev automake build-essential
 
       - name: Install buildozer
         run: |
@@ -44,6 +36,13 @@ jobs:
         run: |
           set -o pipefail
           yes | buildozer android debug 2>&1 | tee build.log
+
+      - name: Patch libffi in buildozer cache
+        if: failure()
+        run: |
+          echo "===== Ищем libffi в кэше buildozer ====="
+          find ~/.buildozer -type d -name "libffi*" 2>/dev/null || true
+          find .buildozer -type d -name "libffi*" 2>/dev/null || true
 
       - name: Show tail of log if failed
         if: failure()
