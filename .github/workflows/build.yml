@@ -25,19 +25,6 @@ jobs:
             pkg-config zlib1g-dev libncurses-dev libtinfo6 cmake \
             libffi-dev libssl-dev automake build-essential libtool-bin
 
-      - name: Downgrade libtool to 2.4.6
-        run: |
-          # libtool 2.4.7 сломал совместимость с libffi 3.4.2
-          cd /tmp
-          wget -q http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
-          tar xzf libtool-2.4.6.tar.gz
-          cd libtool-2.4.6
-          ./configure --prefix=/usr/local
-          make -j4
-          sudo make install
-          sudo ldconfig
-          /usr/local/bin/libtool --version
-
       - name: Install buildozer
         run: |
           pip install --upgrade pip
