@@ -21,6 +21,7 @@ android.ndk_api = 24
 android.accept_sdk_license = True
 android.archs = arm64-v8a, armeabi-v7a
 android.allow_backup = True
+
 p4a.branch = develop
 p4a.local_recipes = ./p4a-recipes
 
