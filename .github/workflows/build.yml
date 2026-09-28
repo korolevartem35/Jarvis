@@ -25,6 +25,22 @@ jobs:
             pkg-config zlib1g-dev libncurses-dev libtinfo6 cmake \
             libffi-dev libssl-dev automake build-essential libtool-bin
 
+      - name: Patch system libtool macros
+        run: |
+          # Добавляем LT_SYS_SYMBOL_USCORE в системные aclocal-макросы
+          echo "Патчим aclocal для LT_SYS_SYMBOL_USCORE..."
+          sudo find /usr/share/aclocal -name "libtool.m4" -exec sh -c '
+            if ! grep -q "LT_SYS_SYMBOL_USCORE" "$1"; then
+              echo "m4_ifndef([LT_SYS_SYMBOL_USCORE], [AC_DEFUN([LT_SYS_SYMBOL_USCORE], [])])" >> "$1"
+            fi
+          ' _ {} \;
+          sudo find /usr/share/aclocal -name "*.m4" -exec sh -c '
+            if ! grep -q "LT_SYS_SYMBOL_USCORE" "$1" 2>/dev/null; then
+              echo "m4_ifndef([LT_SYS_SYMBOL_USCORE], [AC_DEFUN([LT_SYS_SYMBOL_USCORE], [])])" >> "$1"
+            fi
+          ' _ {} \; || true
+          echo "Патч применён"
+
       - name: Install buildozer
         run: |
           pip install --upgrade pip
