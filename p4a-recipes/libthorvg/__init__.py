@@ -20,22 +20,12 @@ class LibthorvgRecipe(Recipe):
         env = self.get_recipe_env(arch)
         build_dir = self.get_build_dir(arch.arch)
         with current_directory(build_dir):
-            # Патчим meson.build — убираем проблему с clang_lib_dir
-            meson_file = join(build_dir, 'meson.build')
-            if not self._meson_patched(meson_file):
-                with open(meson_file, 'r') as f:
-                    content = f.read()
-                # Заменяем проблемную секцию на фиктивную
-                content = content.replace(
-                    "clang_lib_dir = glob(pattern)[0]",
-                    "clang_lib_dir = ''"
-                )
-                with open(meson_file, 'w') as f:
-                    f.write(content)
-
+            # Указываем meson source и build dir явно
             shprint(
                 sh.Command('meson'),
                 'setup',
+                'builddir',                     # куда собирать
+                '.',                            # откуда брать исходники (текущая папка)
                 '--cross-file', 'tmp/android.meson.cross',
                 '--prefix=' + join(build_dir, 'install'),
                 '--default-library=static',
@@ -43,13 +33,6 @@ class LibthorvgRecipe(Recipe):
             )
             shprint(sh.Command('ninja'), '-C', 'builddir', _env=env)
             shprint(sh.Command('ninja'), '-C', 'builddir', 'install', _env=env)
-
-    def _meson_patched(self, path):
-        try:
-            with open(path, 'r') as f:
-                return 'clang_lib_dir = \'\'' in f.read()
-        except Exception:
-            return False
 
     def get_recipe_env(self, arch):
         env = super().get_recipe_env(arch)
