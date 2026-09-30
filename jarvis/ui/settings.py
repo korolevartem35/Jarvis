@@ -10,8 +10,7 @@ from kivy.clock import Clock
 from kivy.utils import get_color_from_hex
 import jarvis.storage as storage
 
-ACTIONS = ["time","date","weather","open","say","battery",
-           "flashlight","app","note","read_notes","remind","stop"]
+ACTIONS = ["time","date","weather","say","note","read_notes","stop"]
 
 
 class SettingsScreen(Screen):
@@ -25,17 +24,36 @@ class SettingsScreen(Screen):
             color=get_color_from_hex("#00e5ff")
         ))
 
-        form = GridLayout(cols=2, size_hint=(1, 0.3), spacing=6)
+        # --- блок обращения ---
+        name_form = GridLayout(cols=2, size_hint=(1, 0.12), spacing=6)
+        name_form.add_widget(Label(text="Обращение:"))
+        self.name_in = TextInput(
+            text=storage.load()["settings"].get("user_name", "сэр"),
+            multiline=False
+        )
+        name_form.add_widget(self.name_in)
+        root.add_widget(name_form)
+
+        save_name_btn = Button(
+            text="Сохранить обращение", size_hint=(1, 0.08),
+            background_color=get_color_from_hex("#00e5ff"),
+            color=get_color_from_hex("#0a0e27")
+        )
+        save_name_btn.bind(on_press=self.save_name)
+        root.add_widget(save_name_btn)
+
+        # --- форма добавления команды ---
+        form = GridLayout(cols=2, size_hint=(1, 0.24), spacing=6)
         form.add_widget(Label(text="Фраза"))
-        self.phrase_in = TextInput(hint_text="например: запусти бравл", multiline=False)
+        self.phrase_in = TextInput(hint_text="например: погода Казань", multiline=False)
         form.add_widget(self.phrase_in)
 
         form.add_widget(Label(text="Действие"))
-        self.action_sp = Spinner(text="app", values=ACTIONS)
+        self.action_sp = Spinner(text="say", values=ACTIONS)
         form.add_widget(self.action_sp)
 
         form.add_widget(Label(text="Аргумент"))
-        self.arg_in = TextInput(hint_text="package|Название или текст", multiline=False)
+        self.arg_in = TextInput(hint_text="текст / город / {name}", multiline=False)
         form.add_widget(self.arg_in)
 
         root.add_widget(form)
@@ -50,7 +68,7 @@ class SettingsScreen(Screen):
 
         self.list_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=4)
         self.list_box.bind(minimum_height=self.list_box.setter("height"))
-        sv = ScrollView(size_hint=(1, 0.45))
+        sv = ScrollView(size_hint=(1, 0.31))
         sv.add_widget(self.list_box)
         root.add_widget(sv)
 
@@ -60,6 +78,11 @@ class SettingsScreen(Screen):
 
         self.add_widget(root)
         Clock.schedule_once(lambda dt: self.refresh(), 0)
+
+    def save_name(self, *a):
+        cfg = storage.load()
+        cfg["settings"]["user_name"] = self.name_in.text.strip() or "сэр"
+        storage.save(cfg)
 
     def add_cmd(self, *a):
         phrase = self.phrase_in.text.strip().lower()
